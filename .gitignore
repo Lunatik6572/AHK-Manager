@@ -1,0 +1,18 @@
+# Node
+node_modules
+
+# Build
+dist
+out
+
+# Misc files
+.DS_Store
+.eslintcache
+*.log*
+
+# VS Code
+.vscode/*
+
+# Don't ignore the .vscode launch and task files
+!.vscode/launch.json
+!.vscode/tasks.json
