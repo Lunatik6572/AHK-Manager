@@ -1,5 +1,4 @@
 import tseslint from '@electron-toolkit/eslint-config-ts'
-import eslintConfigPrettier from '@electron-toolkit/eslint-config-prettier'
 import eslintPluginReact from 'eslint-plugin-react'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
@@ -27,5 +26,22 @@ export default tseslint.config(
       ...eslintPluginReactRefresh.configs.vite.rules
     }
   },
-  eslintConfigPrettier
+  {
+    rules: {
+      semi: "off",
+      "prefer-const": "warn",
+      "no-var": "warn",
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "no-undef": "warn",
+      "@typescript-eslint/array-type": [
+        "warn",
+        {
+          "default": "array-simple"
+        }
+      ],
+      "default-param-last": "off",
+      "@typescript-eslint/default-param-last": "error",
+    }
+  }
 )
