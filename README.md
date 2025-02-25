@@ -5,7 +5,8 @@ AHK Script Manager is an Electron-based desktop application designed to simplify
 - Vite
 - React
 # Required Dependencies
-- [**AutoHotkey**](https://www.autohotkey.com/) - You must have this installed for the scripting to work. You can find the source code [here](https://github.com/AutoHotkey/AutoHotkey).
+- [**AutoHotkey**](https://www.autohotkey.com/) - v2
+    - You must have this installed for the scripting to work. You can find the source code [here](https://github.com/AutoHotkey/AutoHotkey).
 # Development Dependencies
 - **Node** - v22.14.0+
     - You can use [NVM for Windows](https://github.com/coreybutler/nvm-windows) for easy installation.
@@ -15,9 +16,9 @@ AHK Script Manager is an Electron-based desktop application designed to simplify
 # Running the app
 Currently, the app is still in development and must be run using Node or Yarn.
 
-Clone the repo and run:
+Clone the repo and run the following to install the dependencies:
 ```bash
-yarn install
+yarn
 ```
 
 You can run the app using:
