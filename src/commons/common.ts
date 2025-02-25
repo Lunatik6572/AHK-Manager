@@ -41,7 +41,7 @@ class Dictionary<K extends string, V>
   }
 }
 
-enum ApiCalls
+enum IpcChannels
 {
   KILL_ALL = 'kill_all',
   ADD_HOTKEY = 'add_hotkey',
@@ -53,4 +53,4 @@ enum ApiCalls
   RUN_DEFAULT = 'run_default'
 }
 
-export { Dictionary, ApiCalls }
+export { Dictionary, IpcChannels }
