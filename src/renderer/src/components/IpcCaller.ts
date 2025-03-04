@@ -2,7 +2,7 @@ import { IpcChannels } from '../../../commons/common'
 
 const ipc = window.electron.ipcRenderer
 
-function IpcInvoke(channel: IpcChannels, ...args: never[]): Promise<unknown>
+function IpcInvoke(channel: IpcChannels, ...args: never[]): Promise<string>
 {
     return ipc.invoke(channel, ...args)
 }
@@ -20,6 +20,16 @@ function killAllAhkProcesses(): void
 function runDefaultScript(): void
 {
     IpcSend(IpcChannels.RUN_DEFAULT)
+}
+
+function getHotKeys(): Promise<string>
+{
+    return IpcInvoke(IpcChannels.GET_HOTKEYS)
+}
+
+function getHotStrings(): Promise<string>
+{
+    return IpcInvoke(IpcChannels.GET_HOTSTRINGS)
 }
 
 export { IpcInvoke, IpcSend, killAllAhkProcesses, runDefaultScript }

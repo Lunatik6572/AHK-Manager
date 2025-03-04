@@ -50,7 +50,9 @@ enum IpcChannels
   DELETE_HOTSTRING = 'delete_hotstring',
   EDIT_HOTKEY = 'edit_hotkey',
   EDIT_HOTSTRING = 'edit_hotstring',
-  RUN_DEFAULT = 'run_default'
+  RUN_DEFAULT = 'run_default',
+  GET_HOTKEYS = 'get_hotkeys',
+  GET_HOTSTRINGS = 'get_hotstrings',
 }
 
 export { Dictionary, IpcChannels }
