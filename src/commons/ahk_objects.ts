@@ -1,4 +1,4 @@
-enum HotstringOptions 
+enum HotstringOptionCodes 
 {
     IMMEDIATE = '*',
     IN_WORD = '?',
@@ -22,6 +22,45 @@ enum HotkeyModifierCodes
     USE_HOOK = '$',
     UP = 'UP'
 }
+
+const HotstringOptions = 
+[
+    {
+        code: HotstringOptionCodes.IMMEDIATE,
+        name: 'Immediate',
+        description: 'Fire the hotstring immediately after typing the last character'
+    },
+    {
+        code: HotstringOptionCodes.IN_WORD,
+        name: 'In Word',
+        description: 'Fire the hotstring even if it is in the middle of a word'
+    },
+    {
+        code: HotstringOptionCodes.NO_BACKSPACE,
+        name: 'No Backspace',
+        description: 'Don\'t erase the characters when the hotstring is fired'
+    },
+    {
+        code: HotstringOptionCodes.CASE_SENSITIVE,
+        name: 'Case Sensitive',
+        description: 'Only run when the case matches exactly'
+    },
+    {
+        code: HotstringOptionCodes.NO_END_CHAR,
+        name: 'No End Char',
+        description: 'Don\'t keep the end character when the hotstring is fired'
+    },
+    {
+        code: HotstringOptionCodes.RAW,
+        name: 'Raw',
+        description: 'Don\'t interpret the hotstring'
+    },
+    {
+        code: HotstringOptionCodes.NO_SUSPEND,
+        name: 'No Suspend',
+        description: 'Allow this hotstring to run even if the script is suspended'
+    }
+]
 
 const HotkeyModifiers =
     [
@@ -79,7 +118,7 @@ interface HotstringI
 {
     keys: string
     action: string
-    options: HotstringOptions[]
+    options: HotstringOptionCodes[]
 }
 
 interface HotkeyI
@@ -93,9 +132,9 @@ class Hotstring implements HotstringI
 {
     keys: string
     action: string
-    options: HotstringOptions[]
+    options: HotstringOptionCodes[]
 
-    constructor(keys: string, action: string, options: HotstringOptions[] = [])
+    constructor(keys: string, action: string, options: HotstringOptionCodes[] = [])
     {
         this.keys = keys
         this.action = action

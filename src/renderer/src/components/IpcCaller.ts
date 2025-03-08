@@ -1,15 +1,16 @@
+import { Hotkey, Hotstring } from 'src/commons/ahk_objects'
 import { IpcChannels } from '../../../commons/common'
 
 const ipc = window.electron.ipcRenderer
 
-function IpcInvoke(channel: IpcChannels, ...args: never[]): Promise<string>
+function IpcInvoke(channel: IpcChannels, jsonString: string = ''): Promise<string>
 {
-    return ipc.invoke(channel, ...args)
+    return ipc.invoke(channel, jsonString)
 }
 
-function IpcSend(channel: IpcChannels, ...args: never[]): void
+function IpcSend(channel: IpcChannels, jsonString: string = ''): void
 {
-    ipc.send(channel, ...args)
+    ipc.send(channel, jsonString)
 }
 
 function killAllAhkProcesses(): void
@@ -22,14 +23,24 @@ function runDefaultScript(): void
     IpcSend(IpcChannels.RUN_DEFAULT)
 }
 
-function getHotKeys(): Promise<string>
+function getHotkeys(): Promise<string>
 {
     return IpcInvoke(IpcChannels.GET_HOTKEYS)
 }
 
-function getHotStrings(): Promise<string>
+function getHotstrings(): Promise<string>
 {
     return IpcInvoke(IpcChannels.GET_HOTSTRINGS)
 }
 
-export { IpcInvoke, IpcSend, killAllAhkProcesses, runDefaultScript }
+function addHotkey(hotkey: Hotkey): void
+{
+    IpcSend(IpcChannels.ADD_HOTKEY, JSON.stringify(hotkey))
+}
+
+function addHotstring(hotstring: Hotstring): void
+{
+    IpcSend(IpcChannels.ADD_HOTSTRING, JSON.stringify(hotstring))
+}
+
+export { IpcInvoke, IpcSend, killAllAhkProcesses, runDefaultScript, getHotkeys, getHotstrings }
