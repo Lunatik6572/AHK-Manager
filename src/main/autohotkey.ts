@@ -2,7 +2,7 @@ import { exec, execSync, spawn } from "child_process"
 import { existsSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import { join } from "path"
-import { Hotkey, HotkeyI, Hotstring, HotstringI, HotstringOptions } from "../commons/ahk_objects"
+import { Hotkey, HotkeyI, Hotstring, HotstringI, HotstringOptions, HotstringOptionCodes } from "../commons/ahk_objects"
 
 enum AhkMessage
 {
@@ -41,9 +41,9 @@ class HotstringBuilder implements HotstringI
 {
     keys: string
     action: string
-    options: HotstringOptions[]
+    options: HotstringOptionCodes[]
 
-    constructor(keys: string, action: string, options: HotstringOptions[] = [])
+    constructor(keys: string, action: string, options: HotstringOptionCodes[] = [])
     {
         this.keys = keys
         this.action = action
@@ -68,7 +68,7 @@ class HotstringBuilder implements HotstringI
 
 export class AhkManager
 {
-    private static instance: AhkManager | undefined
+    private static instance: AhkManager
 
     private ahkExecPath: string
     private defaultCompiledScriptPath: string
@@ -96,7 +96,7 @@ export class AhkManager
         this.procIds = new Map<number, boolean>()
     }
 
-    public static getInstance(): AhkManager | undefined
+    public static getInstance(): AhkManager
     {
         if (!AhkManager.instance)
         {
@@ -107,8 +107,6 @@ export class AhkManager
             catch (e)
             {
                 console.error((e as Error).message)
-                AhkManager.instance = undefined
-                return undefined
             }
         }
         return AhkManager.instance
@@ -165,7 +163,7 @@ export class AhkManager
         }
     }
 
-    public addHotkeyFromJson(jsonStringified, overwrite: boolean = false): boolean
+    public addHotkeyFromJson(jsonStringified: string, overwrite: boolean = false): boolean
     {
         try
         {
@@ -184,22 +182,50 @@ export class AhkManager
         }
     }
 
-    public addHotstringFromJson(jsonStringified, overwrite: boolean = false): boolean
+    public addHotstringFromJson(jsonStringified: string, overwrite: boolean = false): Promise<string>
     {
         try
         {
             const hotstring: HotstringBuilder = HotstringBuilder.fromJson(JSON.parse(jsonStringified))
             if (!overwrite && this.hotstringDict.has(hotstring.keys))
             {
-                return false
+                return Promise.reject('Hotstring already exists')
             }
             this.hotstringDict.set(hotstring.keys, hotstring)
-            return true
+            console.log(this.hotstringDict)
+            return Promise.resolve('Hotkey added')
         }
         catch (e)
         {
             console.error((e as Error).message)
-            return false
+            return Promise.reject('Error adding hotstring')
+        }
+    }
+
+    public getHotkeys(): Promise<string>
+    {
+        try 
+        {
+            return Promise.resolve(JSON.stringify(Array.from(this.hotkeyDict.values())))
+        }
+        catch (e)
+        {
+            console.error((e as Error).message)
+            return Promise.reject('Error getting hotkeys')
+        }
+    }
+
+    public getHotstrings(): Promise<string>
+    {
+        try
+        {
+            console.log(Array.from(this.hotstringDict.values()))
+            return Promise.resolve(JSON.stringify(Array.from(this.hotstringDict.values())))
+        }
+        catch (e)
+        {
+            console.error((e as Error).message)
+            return Promise.reject('Error getting hotstrings')
         }
     }
 

@@ -32,7 +32,7 @@ export default tseslint.config(
       "prefer-const": "warn",
       "no-var": "warn",
       "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
       "no-undef": "warn",
       "@typescript-eslint/array-type": [
         "warn",

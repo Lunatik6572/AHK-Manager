@@ -175,5 +175,5 @@ class Hotkey implements HotkeyI
     }
 }
 
-export { Hotstring, Hotkey, HotstringOptions, HotkeyModifierCodes, HotkeyModifiers }
+export { Hotstring, Hotkey, HotstringOptions, HotkeyModifierCodes, HotkeyModifiers, HotstringOptionCodes }
 export type { HotkeyI, HotstringI }

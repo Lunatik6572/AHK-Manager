@@ -18,7 +18,7 @@ enum PageName
 
 export default function App(): React.JSX.Element
 {
-    const drawerWidth = 200
+    const drawerWidth = 150
 
     const linkTexts: Map<string, string> = new Map<string, string>([
         [PageName.Home, '/'],
