@@ -1,8 +1,10 @@
 import { exec, execSync, spawn } from "child_process"
-import { existsSync, writeFileSync } from "fs"
+import { existsSync, writeFileSync, readFileSync } from "fs"
 import { tmpdir } from "os"
 import { join } from "path"
 import { Hotkey, HotkeyI, Hotstring, HotstringI, HotstringOptions, HotstringOptionCodes } from "../commons/ahk_objects"
+import { createPromiseMessage } from "../commons/common"
+import defaultAhk from "../../resources/default.ahk?asset"
 
 enum AhkMessage
 {
@@ -24,7 +26,7 @@ class HotkeyBuilder implements HotkeyI
         this.action = action
         this.modifiers = modifiers
     }
-    
+
     public static fromJson(json): HotkeyBuilder
     {
         return new HotkeyBuilder(json.keys, json.action, json.modifiers)
@@ -34,7 +36,7 @@ class HotkeyBuilder implements HotkeyI
     {
         return `${this.modifiers[0]}${this.modifiers[1]}${this.modifiers[2]}::\n{${this.action}\n}`
     }
-    
+
 }
 
 class HotstringBuilder implements HotstringI
@@ -47,10 +49,10 @@ class HotstringBuilder implements HotstringI
     {
         this.keys = keys
         this.action = action
-        this.options = options  
+        this.options = options
     }
 
-    public static fromJson(json): HotstringBuilder
+    public static fromJson(json: HotstringI): HotstringBuilder
     {
         return new HotstringBuilder(json.keys, json.action, json.options)
     }
@@ -68,6 +70,7 @@ class HotstringBuilder implements HotstringI
 
 export class AhkManager
 {
+
     private static instance: AhkManager
 
     private ahkExecPath: string
@@ -112,7 +115,8 @@ export class AhkManager
         return AhkManager.instance
     }
 
-    public broadcast(message: AhkMessage, wParam:number = 0, lParam:number = 0, sync: boolean = false): void {
+    private broadcast(message: AhkMessage, wParam: number = 0, lParam: number = 0, sync: boolean = false): void
+    {
         const command = `echo PostMessage(DllCall("RegisterWindowMessage", "Str", "${message}"), ${wParam}, ${lParam}, , 0xFFFF) | "${this.ahkExecPath}" *`
         if (sync)
         {
@@ -129,10 +133,34 @@ export class AhkManager
         this.broadcast(AhkMessage.KEEP_ALIVE)
     }
 
-    public kill(): void
+    public kill(): Promise<string>
     {
-        this.broadcast(AhkMessage.KILL, 9, 0)
-        this.cleanup()
+        try
+        {
+            this.broadcast(AhkMessage.KILL, 9, 0, true)
+            this.cleanup()
+            return createPromiseMessage(true, 'AHK script killed')
+        }
+        catch (e)
+        {
+            console.error((e as Error).message)
+            return createPromiseMessage(false, 'Error killing AHK script')
+        }
+    }
+
+    public restart(): Promise<string>
+    {
+        try
+        {
+            // Kill code 30 is used to restart the script
+            this.broadcast(AhkMessage.KILL, 30, 0, true)
+            return createPromiseMessage(true, 'AHK script restarted')
+        }
+        catch (e)
+        {
+            console.error((e as Error).message)
+            return createPromiseMessage(false, 'Error restarting AHK script')
+        }
     }
 
     private cleanup(pid: number = 0): void
@@ -163,22 +191,22 @@ export class AhkManager
         }
     }
 
-    public addHotkeyFromJson(jsonStringified: string, overwrite: boolean = false): boolean
+    public addHotkeyFromJson(jsonStringified: string, overwrite: boolean = false): Promise<string>
     {
         try
         {
             const hotkey: HotkeyBuilder = HotkeyBuilder.fromJson(JSON.parse(jsonStringified))
             if (!overwrite && this.hotkeyDict.has(hotkey.keys))
             {
-                return false
+                return createPromiseMessage(false, 'Hotkey already exists')
             }
             this.hotkeyDict.set(hotkey.keys, hotkey)
-            return true
+            return createPromiseMessage(true, 'Hotkey added')
         }
         catch (e)
         {
             console.error((e as Error).message)
-            return false
+            return createPromiseMessage(false, 'Error adding hotkey')
         }
     }
 
@@ -186,19 +214,19 @@ export class AhkManager
     {
         try
         {
-            const hotstring: HotstringBuilder = HotstringBuilder.fromJson(JSON.parse(jsonStringified))
+            const hotstring: HotstringBuilder = HotstringBuilder.fromJson(JSON.parse(jsonStringified) as HotstringI)
             if (!overwrite && this.hotstringDict.has(hotstring.keys))
             {
-                return Promise.reject('Hotstring already exists')
+                return createPromiseMessage(false, 'Hotstring already exists')
             }
             this.hotstringDict.set(hotstring.keys, hotstring)
             console.log(this.hotstringDict)
-            return Promise.resolve('Hotkey added')
+            return createPromiseMessage(true, 'Hotstring added')
         }
         catch (e)
         {
             console.error((e as Error).message)
-            return Promise.reject('Error adding hotstring')
+            return createPromiseMessage(false, 'Error adding hotstring')
         }
     }
 
@@ -206,12 +234,12 @@ export class AhkManager
     {
         try 
         {
-            return Promise.resolve(JSON.stringify(Array.from(this.hotkeyDict.values())))
+            return createPromiseMessage(true, JSON.stringify(Array.from(this.hotkeyDict.values())))
         }
         catch (e)
         {
             console.error((e as Error).message)
-            return Promise.reject('Error getting hotkeys')
+            return createPromiseMessage(false, 'Error getting hotkeys')
         }
     }
 
@@ -219,58 +247,88 @@ export class AhkManager
     {
         try
         {
-            console.log(Array.from(this.hotstringDict.values()))
-            return Promise.resolve(JSON.stringify(Array.from(this.hotstringDict.values())))
+            return createPromiseMessage(true, JSON.stringify(Array.from(this.hotstringDict.values())))
         }
         catch (e)
         {
             console.error((e as Error).message)
-            return Promise.reject('Error getting hotstrings')
+            return createPromiseMessage(false, 'Error getting hotstrings')
         }
     }
 
-    public removeHotkey(keys: string): void
+    public removeHotkey(keys: string): Promise<string>
     {
-        this.hotkeyDict.delete(keys)
-    }
-
-    public removeHotstring(keys: string): void
-    {
-        this.hotstringDict.delete(keys)
-    }
-
-    public run(): void
-    {
-        this.cleanup()
-
-        this.saveSCriptToFile()
-
-        let pid: number = -1
-
-        const proc = spawn(this.ahkExecPath, [this.defaultCompiledScriptPath], {shell: true})
-        proc.stdout.on('data', (data) => {
-            console.log(`stdout: ${data}`)
-        })
-        proc.stderr.on('data', (data) => {
-            console.error(`stderr: ${data}`)
-        })
-        proc.on('exit', (code) => {
-            console.log(`AHK script exited with code ${code}`)
-            this.procIds.set(pid, false)
-            this.cleanup()
-        })
-
-        if (proc.pid)
+        try
         {
-            this.procIds.set(proc.pid, true)
-            this.keepAliveInterval = setInterval(this.keepAlive, 2000)
-            pid = proc.pid
+            this.hotkeyDict.delete(keys)
+            return createPromiseMessage(true, `Hotkey '${keys}' removed`)
+        }
+        catch (e)
+        {
+            console.error((e as Error).message)
+            return createPromiseMessage(false, `Error removing hotkey '${keys}'`)
+        }
+    }
+
+    public removeHotstring(keys: string): Promise<string>
+    {
+        try
+        {
+            this.hotstringDict.delete(keys)
+            return createPromiseMessage(true, `Hotstring '${keys}' removed`)
+        }
+        catch (e)
+        {
+            console.error((e as Error).message)
+            return createPromiseMessage(false, `Error removing hotstring '${keys}'`)
+        }
+    }
+
+    public run(): Promise<string>
+    {
+        try
+        {
+            this.cleanup()
+            this.saveSCriptToFile()
+
+            let pid: number = -1
+
+            const proc = spawn(`"${this.ahkExecPath}"`, [`"${this.defaultCompiledScriptPath}"`], { shell: true })
+            proc.stdout.on('data', (data) =>
+            {
+                console.log(`stdout: ${data}`)
+            })
+            proc.stderr.on('data', (data) =>
+            {
+                console.error(`stderr: ${data}`)
+            })
+            proc.on('exit', (code) =>
+            {
+                console.log(`AHK script exited with code ${code}`)
+                this.procIds.set(pid, false)
+                this.cleanup()
+            })
+
+            if (proc.pid)
+            {
+                this.procIds.set(proc.pid, true)
+                this.keepAliveInterval = setInterval(() => this.broadcast(AhkMessage.KEEP_ALIVE), 2000)
+                pid = proc.pid
+                return createPromiseMessage(true, `${pid}`)
+            }
+
+            return createPromiseMessage(false, `${pid}`)
+        }
+        catch (e)
+        {
+            console.error((e as Error).message)
+            return createPromiseMessage(false, 'Error running script')
         }
     }
 
     private saveSCriptToFile(): void
     {
-        let script: string = ''
+        let script: string = readFileSync(defaultAhk, 'utf-8')
         for (const hotkey of this.hotkeyDict.values())
         {
             script += hotkey.buildAhk() + '\n\n'
@@ -279,7 +337,25 @@ export class AhkManager
         {
             script += hotstring.buildAhk() + '\n\n'
         }
-        
+
         writeFileSync(this.defaultCompiledScriptPath, script)
+    }
+
+    public getStatus(): Promise<string>
+    {
+        try
+        {
+            for (const [pid, running] of this.procIds.entries()) {
+                if (running) {
+                    return createPromiseMessage(true, `${pid}`)
+                }
+            }
+            return createPromiseMessage(true, '-1')
+        }
+        catch (e)
+        {
+            console.error((e as Error).message)
+            return createPromiseMessage(false, 'Error getting status')
+        }
     }
 }

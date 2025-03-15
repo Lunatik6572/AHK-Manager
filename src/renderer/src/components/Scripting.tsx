@@ -57,15 +57,15 @@ export default function Scripting(): JSX.Element
     {
         try
         {
-            console.log('Getting hotkeys');
-            const hotkeys = await IpcCaller.getHotkeys();
-            if (hotkeys !== '')
+            console.log('Getting hotkeys')
+            const hotkeys = await IpcCaller.getHotkeys()
+            if (hotkeys.success && hotkeys.message !== '')
             {
-                setHotkeyItems(JSON.parse(hotkeys));
+                setHotkeyItems(JSON.parse(hotkeys.message))
             }
         } catch (error)
         {
-            console.error('Error getting hotkeys:', error);
+            console.error('Error getting hotkeys:', error)
         }
     }
 
@@ -73,15 +73,15 @@ export default function Scripting(): JSX.Element
     {
         try
         {
-            console.log('Getting hotstrings');
-            const hotstrings = await IpcCaller.getHotstrings();
-            if (hotstrings !== '')
+            console.log('Getting hotstrings')
+            const hotstrings = await IpcCaller.getHotstrings()
+            if (hotstrings.success && hotstrings.message !== '')
             {
-                setHotstringItems(JSON.parse(hotstrings));
+                setHotstringItems(JSON.parse(hotstrings.message))
             }
         } catch (error)
         {
-            console.error('Error getting hotstrings:', error);
+            console.error('Error getting hotstrings:', error)
         }
     }
 
@@ -136,7 +136,17 @@ export default function Scripting(): JSX.Element
                                         ? item.options.join(', ')
                                         : 'None'}
                                 </Typography>
-                                <Button variant="contained" size="small" sx={{ mt: 1 }}>
+                                <Button 
+                                    variant="contained" 
+                                    color="error"
+                                    size="small" 
+                                    sx={{ mt: 1 }}
+                                    onClick={() => {
+                                        IpcCaller.deleteHotstring(item.keys)
+                                            .then(() => getHotstrings())
+                                            .catch((err) => console.error('Error deleting hotstring:', err));
+                                    }}
+                                >
                                     Delete
                                 </Button>
                             </Box>

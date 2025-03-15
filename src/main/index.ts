@@ -26,6 +26,7 @@ function createWindow(): void
   {
     mainWindow.show()
 
+    // Open the DevTools (F12) in development mode.
     if (is.dev)
     {
       mainWindow.webContents.openDevTools()
@@ -67,8 +68,6 @@ app.whenReady().then(() =>
 
   const ahkManager: AhkManager = AhkManager.getInstance()
 
-  // ipcMain.on('ping', () => console.log('pong'))
-  // TODO: Add your IPC event handler here.
   ipcMain.handle(IpcChannels.GET_HOTSTRINGS, (_) =>
   {
     console.log('GET_HOTSTRINGS')
@@ -87,37 +86,50 @@ app.whenReady().then(() =>
   ipcMain.handle(IpcChannels.ADD_HOTKEY, (_, hotkey) =>
   {
     console.log('ADD_HOTKEY', hotkey)
+    // TODO: Implement add hotkey
     return new Promise((resolve) => { resolve('') })
   })
-  ipcMain.on(IpcChannels.EDIT_HOTSTRING, (_, hotstring) =>
+  ipcMain.handle(IpcChannels.EDIT_HOTSTRING, (_, hotstring) =>
   {
     console.log('EDIT_HOTSTRING', hotstring)
+    // TODO: Implement edit hotstring
     return new Promise((resolve) => { resolve('') })
   })
-  ipcMain.on(IpcChannels.EDIT_HOTKEY, (_, hotkey) =>
+  ipcMain.handle(IpcChannels.EDIT_HOTKEY, (_, hotkey) =>
   {
     console.log('EDIT_HOTKEY', hotkey)
+    // TODO: Implement edit hotkey
     return new Promise((resolve) => { resolve('') })
   })
-  ipcMain.on(IpcChannels.DELETE_HOTSTRING, (_, hotstring) =>
+  ipcMain.handle(IpcChannels.DELETE_HOTSTRING, (_, hotstring) =>
   {
     console.log('DELETE_HOTSTRING', hotstring)
-    return new Promise((resolve) => { resolve('') })
+    return ahkManager.removeHotstring(hotstring)
   })
-  ipcMain.on(IpcChannels.DELETE_HOTKEY, (_, hotkey) =>
+  ipcMain.handle(IpcChannels.DELETE_HOTKEY, (_, hotkey) =>
   {
     console.log('DELETE_HOTKEY', hotkey)
-    return new Promise((resolve) => { resolve('') })
+    return ahkManager.removeHotkey(hotkey)
   })
-  ipcMain.on(IpcChannels.RUN_DEFAULT, (_) =>
+  ipcMain.handle(IpcChannels.RUN_DEFAULT, (_) =>
   {
     console.log('RUN_DEFAULT')
-    return new Promise((resolve) => { resolve('') })
+    return ahkManager.run()
   })
-  ipcMain.on(IpcChannels.KILL_ALL, (_) =>
+  ipcMain.handle(IpcChannels.KILL_ALL, (_) =>
   {
     console.log('KILL_ALL')
-    return new Promise((resolve) => { resolve('') })
+    return ahkManager.kill()
+  })
+  ipcMain.handle(IpcChannels.GET_STATUS, (_) =>
+  {
+    console.log('GET_STATUS')
+    return ahkManager.getStatus()
+  })
+  ipcMain.handle(IpcChannels.RESTART, (_) =>
+  {
+    console.log('RESTART')
+    return ahkManager.restart()
   })
 
 

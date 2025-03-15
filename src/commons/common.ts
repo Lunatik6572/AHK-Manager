@@ -41,6 +41,8 @@ class Dictionary<K extends string, V>
   }
 }
 
+type IpcMessage = { success: boolean, message: string }
+
 enum IpcChannels
 {
   KILL_ALL = 'kill_all',
@@ -53,6 +55,33 @@ enum IpcChannels
   RUN_DEFAULT = 'run_default',
   GET_HOTKEYS = 'get_hotkeys',
   GET_HOTSTRINGS = 'get_hotstrings',
+  GET_STATUS = 'get_status',
+  RESTART = 'restart',
 }
 
-export { Dictionary, IpcChannels }
+function createPromiseMessage(success: boolean, message: string = ''): Promise<string>
+{
+  return Promise.resolve(JSON.stringify({ success, message }))
+}
+
+function parsePromiseMessage(jsonString: string): IpcMessage
+{
+  let returnMessage: IpcMessage
+  try
+  {
+    returnMessage = JSON.parse(jsonString)
+    if (typeof returnMessage.success !== 'boolean' && typeof returnMessage.message !== 'string')
+    {
+      throw new Error('Invalid message format')
+    }
+  }
+  catch (e)
+  {
+    returnMessage = { success: false, message: (e as Error).message }
+  }
+
+  return returnMessage
+}
+
+export { Dictionary, IpcChannels, createPromiseMessage, parsePromiseMessage }
+export type { IpcMessage } 

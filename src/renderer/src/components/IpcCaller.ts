@@ -1,11 +1,11 @@
 import { Hotkey, HotkeyI, Hotstring, HotstringI } from 'src/commons/ahk_objects'
-import { IpcChannels } from '../../../commons/common'
+import { IpcChannels, parsePromiseMessage, IpcMessage } from '../../../commons/common'
 
 const ipc = window.electron.ipcRenderer
 
-function IpcInvoke(channel: IpcChannels, ...args): Promise<string>
+function IpcInvoke(channel: IpcChannels, ...args): Promise<IpcMessage>
 {
-    return ipc.invoke(channel, ...args)
+    return ipc.invoke(channel, ...args).then((result: string) => parsePromiseMessage(result))
 }
 
 function IpcSend(channel: IpcChannels, jsonString: string = ''): void
@@ -13,34 +13,55 @@ function IpcSend(channel: IpcChannels, jsonString: string = ''): void
     ipc.send(channel, jsonString)
 }
 
-function killAllAhkProcesses(): void
+function killAllAhkProcesses(): ReturnType<typeof IpcInvoke>
 {
-    IpcSend(IpcChannels.KILL_ALL)
+    return IpcInvoke(IpcChannels.KILL_ALL)
 }
 
-function runDefaultScript(): void
+function runDefaultScript(): ReturnType<typeof IpcInvoke>
 {
-    IpcSend(IpcChannels.RUN_DEFAULT)
+    return IpcInvoke(IpcChannels.RUN_DEFAULT)
 }
 
-function getHotkeys(): Promise<string>
+function restartDefaultScript(): ReturnType<typeof IpcInvoke>
+{
+    return IpcInvoke(IpcChannels.RESTART)
+}
+
+function getHotkeys(): ReturnType<typeof IpcInvoke>
 {
     return IpcInvoke(IpcChannels.GET_HOTKEYS)
 }
 
-function getHotstrings(): Promise<string>
+function getHotstrings(): ReturnType<typeof IpcInvoke>
 {
     return IpcInvoke(IpcChannels.GET_HOTSTRINGS)
 }
 
-function addHotkey(hotkey: Hotkey | HotkeyI, overwrite: boolean = false): Promise<string>
+function addHotkey(hotkey: Hotkey | HotkeyI, overwrite: boolean = false): ReturnType<typeof IpcInvoke>
 {
     return IpcInvoke(IpcChannels.ADD_HOTKEY, JSON.stringify(hotkey), overwrite)
 }
 
-function addHotstring(hotstring: Hotstring | HotstringI, overwrite: boolean = false): Promise<string>
+function addHotstring(hotstring: Hotstring | HotstringI, overwrite: boolean = false): ReturnType<typeof IpcInvoke>
 {
     return IpcInvoke(IpcChannels.ADD_HOTSTRING, JSON.stringify(hotstring), overwrite)
 }
 
-export { killAllAhkProcesses, runDefaultScript, getHotkeys, getHotstrings, addHotkey, addHotstring }
+function deleteHotstring(hotstring: string): ReturnType<typeof IpcInvoke>
+{
+    return IpcInvoke(IpcChannels.DELETE_HOTSTRING, hotstring)
+}
+
+function deleteHotkey(hotkey: string): ReturnType<typeof IpcInvoke>
+{
+    return IpcInvoke(IpcChannels.DELETE_HOTKEY, hotkey)
+}
+
+function getStatus(): ReturnType<typeof IpcInvoke>
+{
+    return IpcInvoke(IpcChannels.GET_STATUS)
+}
+
+export { killAllAhkProcesses, runDefaultScript, getHotkeys, getHotstrings, addHotkey, addHotstring, deleteHotstring, deleteHotkey, getStatus, restartDefaultScript }
+export type promiseType = ReturnType<typeof IpcInvoke>
