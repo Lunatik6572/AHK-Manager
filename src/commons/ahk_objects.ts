@@ -12,11 +12,17 @@ enum HotstringOptionCodes
 enum HotkeyModifierCodes 
 {
     WIN = '#',
+    LWIN = '<#',
+    RWIN = '>#',
     ALT = '!',
+    LALT = '<!',
+    RALT = '>!',
     CTRL = '^',
+    LCTRL = '<^',
+    RCTRL = '>^',
     SHIFT = '+',
-    LEFT = '<',
-    RIGHT = '>',
+    LSHIFT = '<+',
+    RSHIFT = '>+',
     WILDCARD = '*',
     NO_BLOCK = '~',
     USE_HOOK = '$',
@@ -68,49 +74,97 @@ const HotkeyModifiers =
             code: HotkeyModifierCodes.WIN,
             name: 'Win',
             description: 'Windows key',
-            leftRight: true
+            group: HotkeyModifierCodes.WIN,
+        },
+        {
+            code: HotkeyModifierCodes.LWIN,
+            name: 'Left Win',
+            description: 'Left Windows key',
+            group: HotkeyModifierCodes.WIN,
+        },
+        {
+            code: HotkeyModifierCodes.RWIN,
+            name: 'Right Win',
+            description: 'Right Windows key',
+            group: HotkeyModifierCodes.WIN,
         },
         {
             code: HotkeyModifierCodes.ALT,
             name: 'Alt',
             description: 'Alt key',
-            leftRight: true
+            group: HotkeyModifierCodes.ALT,
+        },
+        {
+            code: HotkeyModifierCodes.LALT,
+            name: 'Left Alt',
+            description: 'Left Alt key',
+            group: HotkeyModifierCodes.ALT,
+        },
+        {
+            code: HotkeyModifierCodes.RALT,
+            name: 'Right Alt',
+            description: 'Right Alt key',
+            group: HotkeyModifierCodes.ALT,
         },
         {
             code: HotkeyModifierCodes.CTRL,
             name: 'Ctrl',
             description: 'Ctrl key',
-            leftRight: true
+            group: HotkeyModifierCodes.CTRL,
+        },
+        {
+            code: HotkeyModifierCodes.LCTRL,
+            name: 'Left Ctrl',
+            description: 'Left Ctrl key',
+            group: HotkeyModifierCodes.CTRL,
+        },
+        {
+            code: HotkeyModifierCodes.RCTRL,
+            name: 'Right Ctrl',
+            description: 'Right Ctrl key',
+            group: HotkeyModifierCodes.CTRL,
         },
         {
             code: HotkeyModifierCodes.SHIFT,
             name: 'Shift',
             description: 'Shift key',
-            leftRight: true
+            group: HotkeyModifierCodes.SHIFT,
+        },
+        {
+            code: HotkeyModifierCodes.LSHIFT,
+            name: 'Left Shift',
+            description: 'Left Shift key',
+            group: HotkeyModifierCodes.SHIFT,
+        },
+        {
+            code: HotkeyModifierCodes.RSHIFT,
+            name: 'Right Shift',
+            description: 'Right Shift key',
+            group: HotkeyModifierCodes.SHIFT,
         },
         {
             code: HotkeyModifierCodes.WILDCARD,
             name: 'Wildcard',
             description: 'Fire the hotkey even if other keys are pressed',
-            leftRight: false
+            group: HotkeyModifierCodes.WILDCARD,
         },
         {
             code: HotkeyModifierCodes.NO_BLOCK,
             name: 'No Block',
             description: 'Don\'t block the pressed keys from their original function',
-            leftRight: false
+            group: HotkeyModifierCodes.NO_BLOCK,
         },
         {
             code: HotkeyModifierCodes.USE_HOOK,
             name: 'Use Hook',
-            description: 'Enable this if the reulting action may activate a hotkey or hotstring',
-            leftRight: false
+            description: 'Enable this if the resulting action may activate a hotkey or hotstring',
+            group: HotkeyModifierCodes.USE_HOOK,
         },
         {
             code: HotkeyModifierCodes.UP,
             name: 'On Release',
             description: 'Activate when the key is released',
-            leftRight: false
+            group: HotkeyModifierCodes.UP,
         }
     ]
 
@@ -155,11 +209,10 @@ class Hotkey implements HotkeyI
         this.modifiers = ['', '', '']
     }
 
-    addModifer(modifier1: HotkeyModifierCodes, modifier2?: HotkeyModifierCodes): void
+    addModifier(modifier: HotkeyModifierCodes): void
     {
-        const modifier: string = modifier1 + (modifier2 ?? '')
 
-        switch (modifier1)
+        switch (modifier)
         {
             case HotkeyModifierCodes.UP:
                 this.modifiers[2] = modifier

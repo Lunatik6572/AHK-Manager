@@ -83,5 +83,7 @@ function parsePromiseMessage(jsonString: string): IpcMessage
   return returnMessage
 }
 
-export { Dictionary, IpcChannels, createPromiseMessage, parsePromiseMessage }
+const AHK_LANGUAGE_ID = 'ahk_v2';
+
+export { Dictionary, IpcChannels, createPromiseMessage, parsePromiseMessage, AHK_LANGUAGE_ID }
 export type { IpcMessage } 
