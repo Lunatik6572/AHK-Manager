@@ -4,6 +4,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import { HotkeyI, HotstringI, HotstringOptions, HotkeyModifiers, HotstringOptionCodes } from "../../../commons/ahk_objects"
 import * as IpcCaller from "./IpcCaller"
+import "./HotstringEditor"
+import HotstringEditor from "./HotstringEditor"
 
 enum ExpandGroups
 {
@@ -186,65 +188,57 @@ export default function Scripting(): JSX.Element
         )
     }
 
-    const newHostringForm = (): JSX.Element =>
+    const newHotstringForm = (): JSX.Element =>
     {
         return (
             <>
-                <Box>
-                    <ListItemButton onClick={() => expandToggle(ExpandGroups.HOTSTRING_OPTION, 'HOTSTRING_OPTION')}>
-                        <ListItemText primary='Add a new hotkey' />
-                        {hotstringExpanded === 'HOTSTRING_OPTION' ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    </ListItemButton>
-                    <Collapse in={hotstringOptionExpanded === 'HOTSTRING_OPTION'} timeout="auto" unmountOnExit>
-                        <FormControl component="form" onSubmit={handleHotstringSubmit}>
-                            <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mt: 2, mb: 2 }}>
-                                <TextField
-                                    id="hotstring-key"
-                                    label="Hotstring Keys"
-                                    variant="outlined"
-                                    size="small"
-                                    sx={{ width: '40%' }}
-                                    placeholder="e.g. btw"
-                                    value={hotstringKey}
-                                    onChange={(e) => setHotstringKey(e.target.value)}
-                                    required
+                <FormControl component="form" onSubmit={handleHotstringSubmit}>
+                    <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mt: 2, mb: 2 }}>
+                        <TextField
+                            id="hotstring-key"
+                            label="Hotstring Keys"
+                            variant="outlined"
+                            size="small"
+                            sx={{ width: '40%' }}
+                            placeholder="e.g. btw"
+                            value={hotstringKey}
+                            onChange={(e) => setHotstringKey(e.target.value)}
+                            required
+                        />
+                        <TextField
+                            id="hotstring-action"
+                            label="Hotstring Action"
+                            variant="outlined"
+                            size="small"
+                            sx={{ width: '60%' }}
+                            placeholder="e.g. by the way"
+                            value={hotstringAction}
+                            onChange={(e) => setHotstringAction(e.target.value)}
+                            required
+                        />
+                    </Box>
+                    <FormLabel>Options</FormLabel>
+                    <FormGroup>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', width: '100%', gap: 1 }}>
+                            {Object.entries(HotstringOptions).map(([key, value]) => (
+                                <FormControlLabel
+                                    key={key}
+                                    control={<Checkbox
+                                        checked={!!hotstringOpts[value.code]}
+                                        onChange={(e) => setHotstringOpts(prev => ({ ...prev, [value.code]: e.target.checked }))}
+                                    />}
+                                    label={`${value.name}: ${value.description}`}
+                                    sx={{ margin: 0 }}
                                 />
-                                <TextField
-                                    id="hotstring-action"
-                                    label="Hotstring Action"
-                                    variant="outlined"
-                                    size="small"
-                                    sx={{ width: '60%' }}
-                                    placeholder="e.g. by the way"
-                                    value={hotstringAction}
-                                    onChange={(e) => setHotstringAction(e.target.value)}
-                                    required
-                                />
-                            </Box>
-                            <FormLabel>Options</FormLabel>
-                            <FormGroup>
-                                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', width: '100%', gap: 1 }}>
-                                    {Object.entries(HotstringOptions).map(([key, value]) => (
-                                        <FormControlLabel
-                                            key={key}
-                                            control={<Checkbox
-                                                checked={!!hotstringOpts[value.code]}
-                                                onChange={(e) => setHotstringOpts(prev => ({ ...prev, [value.code]: e.target.checked }))}
-                                            />}
-                                            label={`${value.name}: ${value.description}`}
-                                            sx={{ margin: 0 }}
-                                        />
-                                    ))}
-                                </Box>
-                            </FormGroup>
-                            <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 2 }}>
-                                <Button variant="contained" color="primary" type="submit">
-                                    Add New Hotstring
-                                </Button>
-                            </Box>
-                        </FormControl>
-                    </Collapse>
-                </Box>
+                            ))}
+                        </Box>
+                    </FormGroup>
+                    <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 2 }}>
+                        <Button variant="contained" color="primary" type="submit">
+                            Add New Hotstring
+                        </Button>
+                    </Box>
+                </FormControl>
             </>
         )
     }
@@ -262,14 +256,33 @@ export default function Scripting(): JSX.Element
                 </Divider>
                 <List>
                     {hotstringItems.length > 0 && showHotstrings()}
-                    {newHostringForm()}
+                    <Box>
+                        <ListItemButton onClick={() => expandToggle(ExpandGroups.HOTSTRING_OPTION, 'HOTSTRING_OPTION')}>
+                            <ListItemText primary='Add a new hotstring' />
+                            {hotstringExpanded === 'HOTSTRING_OPTION' ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </ListItemButton>
+                        <Collapse in={hotstringOptionExpanded === 'HOTSTRING_OPTION'} timeout="auto" unmountOnExit>
+                            {newHotstringForm()}
+                        </Collapse>
+                    </Box>
                 </List>
                 <Divider variant="middle" sx={{ mt: 2 }}>
                     <Typography variant="body1" color="text.secondary">
                         Hotkeys
                     </Typography>
                 </Divider>
-                {hotkeyItems.length > 0 ? showHotkeys() : <Typography variant="body1" color="text.secondary">No hotkeys found</Typography>}
+                <List>
+                    {hotkeyItems.length > 0 && showHotkeys()}
+                    <Box>
+                        <ListItemButton onClick={() => expandToggle(ExpandGroups.HOTKEY_OPTION, 'HOTKEY_OPTION')}>
+                            <ListItemText primary='Add a new hotkey' />
+                            {hotkeyExpanded === 'HOTKEY_OPTION' ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </ListItemButton>
+                        <Collapse in={hotkeyOptionExpanded === 'HOTKEY_OPTION'} timeout="auto" unmountOnExit>
+                            <HotstringEditor />
+                        </Collapse>
+                    </Box>
+                </List>
             </Container>
         </>
     )

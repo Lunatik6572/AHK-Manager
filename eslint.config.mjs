@@ -32,7 +32,8 @@ export default tseslint.config(
       "prefer-const": "warn",
       "no-var": "warn",
       "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+      // "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+      "@typescript-eslint/no-unused-vars": "off",
       "no-undef": "warn",
       "@typescript-eslint/array-type": [
         "warn",
@@ -43,5 +44,11 @@ export default tseslint.config(
       "default-param-last": "off",
       "@typescript-eslint/default-param-last": "error",
     }
-  }
+  },
+  {
+    files: ['**/*.{ts,tsx}'],
+    rules: {
+      "no-undef": "off"
+    }
+  },
 )

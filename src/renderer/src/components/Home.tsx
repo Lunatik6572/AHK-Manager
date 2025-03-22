@@ -11,10 +11,7 @@ function activateStatusRefresh(getStatus: () => void, interval: number): void
     {
         clearInterval(keepAliveInterval)
     }
-    keepAliveInterval = setInterval(() =>
-    {
-        getStatus()
-    }, interval)
+    keepAliveInterval = setInterval(getStatus, interval)
 }
 
 enum AhkAction
@@ -32,7 +29,7 @@ export default function Home(): JSX.Element
 
     useEffect(() =>
     {
-        activateStatusRefresh(getStatus, 10000)
+        activateStatusRefresh(getStatus, 5000)
     }, [])
 
     const getStatus = (): void =>
