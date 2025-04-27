@@ -83,11 +83,10 @@ app.whenReady().then(() =>
     console.log('ADD_HOTSTRING', hotstring, overwrite)
     return ahkManager.addHotstringFromJson(hotstring, overwrite)
   })
-  ipcMain.handle(IpcChannels.ADD_HOTKEY, (_, hotkey) =>
+  ipcMain.handle(IpcChannels.ADD_HOTKEY, (_, hotkey: string, overwrite: boolean) =>
   {
     console.log('ADD_HOTKEY', hotkey)
-    // TODO: Implement add hotkey
-    return new Promise((resolve) => { resolve('') })
+    return ahkManager.addHotkeyFromJson(hotkey, overwrite)
   })
   ipcMain.handle(IpcChannels.EDIT_HOTSTRING, (_, hotstring) =>
   {

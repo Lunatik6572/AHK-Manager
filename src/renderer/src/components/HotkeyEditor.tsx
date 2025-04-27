@@ -3,12 +3,18 @@ import Editor from '@monaco-editor/react'
 import { AHK_LANGUAGE_ID } from '../../../commons/common'
 import { Box, Button, Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, TextField } from '@mui/material'
 import { Hotkey, HotkeyModifierCodes, HotkeyModifiers } from '../../../commons/ahk_objects'
+import * as IpcCaller from "./IpcCaller"
 
-export default function HotstringEditor(): JSX.Element 
+interface HotkeyEditorProps
+{
+    onHotkeyAdded: () => void
+}
+
+export default function HotkeyEditor({ onHotkeyAdded }: HotkeyEditorProps): JSX.Element 
 {
 
     const topComment: string = ['; <- This character is for comments. Anything to the right is ignored by AHK',
-        '; Add some code below for your hotstring! Here\'s an example:',
+        '; Add some code below for your hotkey! Here\'s an example:',
         '; Send("^s") ; This will send Ctrl+S',
         '; Send("{Enter}") ; This will send Enter',
         '; MsgBox("Hello, world!") ; This will show a message box',
@@ -18,7 +24,6 @@ export default function HotstringEditor(): JSX.Element
     ].join('\n')
 
     const [code, setCode] = useState(topComment)
-
     const [hotkeyOpts, setHotkeyOpts] = useState<Record<string, string>>({});
     const [hotkeyKey, setHotkeyKey] = useState('')
 
@@ -37,9 +42,13 @@ export default function HotstringEditor(): JSX.Element
             }
         })
 
-        console.log('New hotkey to add:', hotkey)
+        IpcCaller.addHotkey(hotkey)
+            .then((_) => onHotkeyAdded())
+            .catch((err) => console.error(err))
 
-        // TODO: Send IPC message to main process to add hotkey
+        setCode(topComment)
+        setHotkeyKey('')
+        setHotkeyOpts({})
     }
 
 
@@ -52,10 +61,13 @@ export default function HotstringEditor(): JSX.Element
                         label="Hotkey Key"
                         variant="outlined"
                         size="small"
-                        sx={{ width: '50%' }}
-                        placeholder="Must be one key like: s, F11, -, 5, {Insert}, {Tab}"
+                        sx={{ width: '30%' }}
+                        placeholder="Must be one key like: s, F11, -, 5, Ins, Tab"
                         value={hotkeyKey}
-                        onChange={(e) => setHotkeyKey(e.target.value)}
+                        onChange={(e) => {
+                            console.log(e.target.value)
+                            setHotkeyKey(e.target.value)
+                        }}
                         required
                     />
                     <Button variant="contained" color="primary" type="submit">

@@ -4,8 +4,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import ExpandLessIcon from "@mui/icons-material/ExpandLess"
 import { HotkeyI, HotstringI, HotstringOptions, HotkeyModifiers, HotstringOptionCodes } from "../../../commons/ahk_objects"
 import * as IpcCaller from "./IpcCaller"
-import "./HotstringEditor"
-import HotstringEditor from "./HotstringEditor"
+import "./HotkeyEditor"
+import HotkeyEditor from "./HotkeyEditor"
 
 enum ExpandGroups
 {
@@ -161,12 +161,17 @@ export default function Scripting(): JSX.Element
 
     const showHotkeys = (): JSX.Element =>
     {
+        function getHotkeyTitle(hotkey: HotkeyI): string
+        {
+            return `${hotkey.modifiers[0]}${hotkey.modifiers[1]}${hotkey.keys}${hotkey.modifiers[2]}`
+        }
+
         return (
             <>
                 {hotkeyItems.map((item) => (
                     <Box key={item.keys}>
                         <ListItemButton onClick={() => expandToggle(ExpandGroups.HOTKEY, item.keys)}>
-                            <ListItemText primary={item.keys} />
+                            <ListItemText primary={getHotkeyTitle(item)} />
                             {hotkeyExpanded === item.keys ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </ListItemButton>
                         <Collapse in={hotkeyExpanded === item.keys} timeout="auto" unmountOnExit>
@@ -174,11 +179,19 @@ export default function Scripting(): JSX.Element
                                 <Typography variant="body2" color="text.secondary">
                                     {item.action}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    {item.modifiers}
-                                </Typography>
-                                <Button variant="contained" size="small" sx={{ mt: 1 }}>
-                                    Action
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    size="small"
+                                    sx={{ mt: 1 }}
+                                    onClick={() =>
+                                    {
+                                        IpcCaller.deleteHotkey(item.keys)
+                                            .then(() => getHotkeys())
+                                            .catch((err) => console.error('Error deleting hotstring:', err));
+                                    }}
+                                >
+                                    Delete
                                 </Button>
                             </Box>
                         </Collapse>
@@ -279,7 +292,7 @@ export default function Scripting(): JSX.Element
                             {hotkeyExpanded === 'HOTKEY_OPTION' ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </ListItemButton>
                         <Collapse in={hotkeyOptionExpanded === 'HOTKEY_OPTION'} timeout="auto" unmountOnExit>
-                            <HotstringEditor />
+                            <HotkeyEditor onHotkeyAdded={getHotkeys} />
                         </Collapse>
                     </Box>
                 </List>

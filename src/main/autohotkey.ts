@@ -34,7 +34,7 @@ class HotkeyBuilder implements HotkeyI
 
     public buildAhk(): string
     {
-        return `${this.modifiers[0]}${this.modifiers[1]}${this.modifiers[2]}::\n{${this.action}\n}`
+        return `${this.modifiers[0]}${this.modifiers[1]}${this.keys}${this.modifiers[2]}::\n{\n${this.action}\n}`
     }
 
 }
@@ -329,10 +329,14 @@ export class AhkManager
     private saveSCriptToFile(): void
     {
         let script: string = readFileSync(defaultAhk, 'utf-8')
+
+        script += '\n; HOTKEY SECTION\n\n'
         for (const hotkey of this.hotkeyDict.values())
         {
             script += hotkey.buildAhk() + '\n\n'
         }
+
+        script += '\n; HOTSTRING SECTION\n\n'
         for (const hotstring of this.hotstringDict.values())
         {
             script += hotstring.buildAhk() + '\n\n'
